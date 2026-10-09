@@ -1,0 +1,5 @@
+# Crane Radius
+
+Native Android planning aid for straight-boom crane geometry.
+
+See LIMITATIONS.md and ROADMAP.md for scope and safety notes.
