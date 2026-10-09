@@ -12,9 +12,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 private const val TAG = "CameraPreview"
 
@@ -43,24 +45,35 @@ fun CameraPreview(
 
     LaunchedEffect(Unit) {
         try {
-            val cameraProvider = withContext(Dispatchers.IO) {
-                cameraProviderFuture.get()
+            val cameraProvider = suspendCancellableCoroutine { cont ->
+                cameraProviderFuture.addListener(
+                    {
+                        try {
+                            cont.resume(cameraProviderFuture.get())
+                        } catch (e: Exception) {
+                            cont.resumeWithException(e)
+                        }
+                    },
+                    ContextCompat.getMainExecutor(context)
+                )
             }
 
             val preview = Preview.Builder().build()
             preview.setSurfaceProvider(previewView.surfaceProvider)
 
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
             cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview)
+            cameraProvider.bindToLifecycle(
+                lifecycleOwner,
+                CameraSelector.DEFAULT_BACK_CAMERA,
+                preview
+            )
 
             Log.i(TAG, "Camera bound successfully")
             onReady()
         } catch (e: Exception) {
             Log.e(TAG, "Camera init failed", e)
             val message = e.message?.takeIf { it.isNotBlank() }
-                ?: "Camera initialisation failed. The device may not have a compatible camera."
+                ?: "Camera initialisation failed. Another app may be using it."
             onError(message)
         }
     }
