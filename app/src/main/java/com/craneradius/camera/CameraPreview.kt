@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private const val TAG = "CameraPreview"
 
@@ -41,11 +43,12 @@ fun CameraPreview(
 
     LaunchedEffect(Unit) {
         try {
-            val cameraProvider = cameraProviderFuture.get()
-
-            val preview = Preview.Builder().build().also {
-                it.surfaceProvider = previewView.surfaceProvider
+            val cameraProvider = withContext(Dispatchers.IO) {
+                cameraProviderFuture.get()
             }
+
+            val preview = Preview.Builder().build()
+            preview.setSurfaceProvider(previewView.surfaceProvider)
 
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
