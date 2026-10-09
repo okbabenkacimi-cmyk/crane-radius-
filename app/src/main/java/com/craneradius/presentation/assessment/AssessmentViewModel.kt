@@ -25,6 +25,10 @@ class AssessmentViewModel : ViewModel() {
         _uiState.update { it.copy(cameraState = CameraUiState.PermissionDenied) }
     }
 
+    fun onCameraReady() {
+        _uiState.update { it.copy(cameraState = CameraUiState.Ready) }
+    }
+
     fun onCameraError(message: String) {
         _uiState.update { it.copy(cameraState = CameraUiState.Error(message)) }
     }
