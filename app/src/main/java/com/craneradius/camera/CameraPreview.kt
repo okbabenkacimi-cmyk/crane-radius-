@@ -11,8 +11,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -60,8 +60,7 @@ fun CameraPreview(
         } catch (e: Exception) {
             Log.e(TAG, "Camera init failed", e)
             val message = e.message?.takeIf { it.isNotBlank() }
-                ?: "Camera initialisation failed. The device may not have " +
-                    "a compatible camera, or another app may be using it."
+                ?: "Camera initialisation failed. The device may not have a compatible camera."
             onError(message)
         }
     }
